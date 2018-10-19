@@ -1,0 +1,58 @@
+# Serverless definition file
+# — — — — — — — — — — — — —
+# Defines Lambda functions to be deployed to AWS using the Serverless Framework.
+# http://serverless.com
+service: message-service
+plugins:
+  - serverless-domain-manager
+  - serverless-webpack
+  - serverless-plugin-warmup
+  - serverless-plugin-tracing
+package:
+  individually: true
+custom:
+  defaultStage: dev
+  defaultRegion: us-east-1
+  webpack: ../../../webpack.config.js
+  webpackIncludeModules: true # enable auto-packing of external modules
+  customDomain:
+    domainName: ${file(../../../env.yml):${self:provider.stage}.API_DOMAIN}
+    basePath: messages
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+  warmup:
+    folderName: '_warmup' # Name of the folder created for the generated warmup
+    cleanFolder: false
+    memorySize: 128
+    schedule: 'cron(0,10,20,30,40,50 12-4 ? * MON-SUN *)' # Run WarmUP every 10 minutes Mon-Sun between 7:00am and 10:55pm (CT)
+    timeout: 20
+    prewarm: true # Run WarmUp immediately after a deployment
+provider:
+  name: aws
+  stage: ${opt:stage, self:custom.defaultStage}
+  region: ${opt:region, self:custom.defaultRegion}
+  runtime: nodejs8.10
+  memorySize: 1984
+  timeout: 30
+  environment: ${file(../../../env.yml):${self:provider.stage}}
+  tracing: true
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'lambda:InvokeFunction'
+        - 'xray:PutTraceSegments'
+        - 'xray:PutTelemetryRecords'
+      Resource: "*"
+
+
+functions:
+  api:
+    handler: api/lambda-handler.handler
+    warmup: true
+    events:
+      - http:
+          path: / # this matches the base path
+          method: ANY
+      - http:
+          path: /{any+} # this matches any path, the token 'any' doesn't mean anything special
+          method: ANY

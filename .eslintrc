@@ -1,0 +1,27 @@
+{
+  "env": {
+    "browser": 0,
+    "node": 1,
+    "es6": 1
+  },
+  "rules": {
+    "semi": [2, "never"],
+    "no-var": 2,
+    "no-unused-vars": [1, {
+      "vars": "all",
+      "args": "none"
+    }],
+    "no-underscore-dangle": 0,
+    "no-empty": 0,
+    "space-return-throw-case": 0,
+    "react/no-find-dom-node": 0
+  },
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  }
+}
